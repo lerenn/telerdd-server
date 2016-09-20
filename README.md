@@ -1,2 +1,4 @@
-# telerdd-server
-Server for RDD application
+TeleRDD
+=======
+
+Application for RDD.

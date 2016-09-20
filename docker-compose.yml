@@ -1,0 +1,20 @@
+app:
+  image: lerenn/telerdd
+  ports:
+    - "8080:8080"
+  volumes:
+    - ./:/telerdd:z
+  links:
+    - db:db
+db:
+  image: mysql
+  environment:
+    MYSQL_ROOT_PASSWORD: T3L3RDD_P4SSW0RD
+phpmyadmin:
+  image: phpmyadmin/phpmyadmin
+  environment:
+    MYSQL_ROOT_PASSWORD: T3L3RDD_P4SSW0RD
+  ports:
+    - "8081:80"
+  links:
+    - db:db

@@ -1,0 +1,35 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"path": "appengine/cloudsql",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "jEXpLrWXoQvH/zk1lW5Si0swr6Y=",
+			"path": "github.com/go-sql-driver/mysql",
+			"revision": "0b58b37b664c21f3010e836f1b931e1d0b0b0685",
+			"revisionTime": "2016-08-02T11:38:42Z"
+		},
+		{
+			"checksumSHA1": "9cd5iyivwYM3oaYc100RRoG8OWE=",
+			"path": "github.com/lerenn/go-config",
+			"revision": "bb84667fac82b6fc73f78336a2fe25be666f9043",
+			"revisionTime": "2016-09-14T13:13:58Z"
+		},
+		{
+			"checksumSHA1": "vUlMVsrPFOhd1wJb/hcOFb/B98w=",
+			"path": "github.com/lerenn/log",
+			"revision": "1ddd9826de343a35debc97631e0f91c93f35e856",
+			"revisionTime": "2016-08-31T15:27:09Z"
+		},
+		{
+			"checksumSHA1": "JMJsgixpFXYflvo4Ho00OVhJlg0=",
+			"path": "github.com/tomasen/realip",
+			"revision": "15489afd3be348430f5f67467d2bb6b2f9b757ed",
+			"revisionTime": "2015-09-26T08:24:20Z"
+		}
+	],
+	"rootPath": "github.com/lerenn/telerdd"
+}
