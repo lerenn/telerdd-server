@@ -1,9 +1,9 @@
-app:
-  image: lerenn/telerdd
+api:
+  build: .
   ports:
     - "8080:8080"
   volumes:
-    - ./:/telerdd:z
+    - ./:/telerdd-server:z
   links:
     - db:db
 db:

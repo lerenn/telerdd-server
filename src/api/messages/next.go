@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/lerenn/telerdd/src/tools"
+	"github.com/lerenn/telerdd-server/src/tools"
 )
 
 func next(db *sql.DB, r *http.Request) string {

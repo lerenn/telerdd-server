@@ -8,9 +8,8 @@ import (
 
 	config "github.com/lerenn/go-config"
 	"github.com/lerenn/log"
-	"github.com/lerenn/telerdd/src/api"
-	"github.com/lerenn/telerdd/src/data"
-	"github.com/lerenn/telerdd/src/tools"
+	"github.com/lerenn/telerdd-server/src/api"
+	"github.com/lerenn/telerdd-server/src/data"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -48,7 +47,9 @@ func (t *TeleRDD) Init() error {
 	t.logger.Print("Database loaded")
 
 	// Prepare server
-	t.initHTTPServer()
+	if err := t.initHTTPServer(); err != nil {
+		return err
+	}
 	t.logger.Print("HTTP Server ready")
 
 	t.logger.Print("Initialization complete")
@@ -108,19 +109,21 @@ func (t *TeleRDD) initLog() error {
 	return nil
 }
 
-func (t *TeleRDD) initHTTPServer() {
-	http.Handle(WEBCLIENT_PREFIX, http.StripPrefix(WEBCLIENT_PREFIX, http.FileServer(http.Dir("webclient"))))
+func (t *TeleRDD) initHTTPServer() error {
+	// Get authorized URL for client
+	authorizedOrigin, err := t.conf.GetString(CLIENT_SECTION_TOKEN, CLIENT_AUTHORIZED_ORIGIN_TOKEN)
+	if err != nil {
+		return err
+	}
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		func(w http.ResponseWriter, r *http.Request, logger *log.Log, db *sql.DB) {
-			base, extent := tools.Split(r.URL.Path[1:], "/")
-
-			if base == "api" {
-				fmt.Fprintf(w, api.Process(t.data, db, logger, w, r, extent))
-			} else {
-				http.Redirect(w, r, WEBCLIENT_PREFIX+"home.html", 301)
-			}
+			w.Header().Set("Access-Control-Allow-Origin", authorizedOrigin)
+			fmt.Fprintf(w, api.Process(t.data, db, logger, w, r, r.URL.Path[1:]))
 		}(w, r, t.logger, t.db)
 	})
+
+	return nil
 }
 
 func (t *TeleRDD) initData() error {

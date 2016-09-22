@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/lerenn/telerdd/src/api/account"
-	"github.com/lerenn/telerdd/src/tools"
+	"github.com/lerenn/telerdd-server/src/api/account"
+	"github.com/lerenn/telerdd-server/src/tools"
 )
 
 func status(db *sql.DB, r *http.Request) string {

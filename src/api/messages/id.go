@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/lerenn/telerdd/src/tools"
+	"github.com/lerenn/telerdd-server/src/tools"
 )
 
 func id(db *sql.DB, r *http.Request) string {

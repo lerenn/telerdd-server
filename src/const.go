@@ -16,8 +16,8 @@ const DB_NAME_TOKEN = "name"
 const MESSAGES_SECTION_TOKEN = "messages"
 const MESSAGES_LIMIT_TOKEN = "limit"
 
+const CLIENT_SECTION_TOKEN = "client"
+const CLIENT_AUTHORIZED_ORIGIN_TOKEN = "authorized_origin"
+
 // Date
 const NO_DATE = "[###]"
-
-// Webclient
-const WEBCLIENT_PREFIX = "/w/"

@@ -6,13 +6,13 @@ EXPOSE 8080
 
 # Volumes
 VOLUME /var/log
-VOLUME /telerdd
+VOLUME /telerdd-server
 
 # Workdir
-WORKDIR /telerdd
+WORKDIR /telerdd-server
 
 # Command
-CMD ./bin/telerdd
+CMD ./bin/telerdd-server
 
 # Data
 COPY ./ ./

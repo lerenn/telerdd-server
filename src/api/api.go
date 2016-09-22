@@ -5,10 +5,10 @@ import (
 	"net/http"
 
 	"github.com/lerenn/log"
-	"github.com/lerenn/telerdd/src/api/account"
-	"github.com/lerenn/telerdd/src/api/messages"
-	"github.com/lerenn/telerdd/src/data"
-	"github.com/lerenn/telerdd/src/tools"
+	"github.com/lerenn/telerdd-server/src/api/account"
+	"github.com/lerenn/telerdd-server/src/api/messages"
+	"github.com/lerenn/telerdd-server/src/data"
+	"github.com/lerenn/telerdd-server/src/tools"
 )
 
 const Prefix = "/api/"
