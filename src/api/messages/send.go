@@ -10,10 +10,25 @@ import (
 	"github.com/lerenn/telerdd-server/src/tools"
 )
 
-func send(infos *data.Data, db *sql.DB, l *log.Log, r *http.Request) string {
+type Send struct {
+	// Infos
+	data   *data.Data
+	db     *sql.DB
+	logger *log.Log
+}
+
+func NewSend(data *data.Data, db *sql.DB, logger *log.Log) *Send {
+	var s Send
+	s.data = data
+	s.db = db
+	s.logger = logger
+	return &s
+}
+
+func (s *Send) Process(r *http.Request) string {
 	// Check if authorized
 	ip := tools.GetIp(r)
-	t, err := infos.ProceedMessageLimit(ip)
+	t, err := s.data.ProceedMessageLimit(ip)
 	if err != nil {
 		return tools.JSONError("Error when check older messages: " + err.Error())
 	} else if t != -1 {
@@ -34,7 +49,7 @@ func send(infos *data.Data, db *sql.DB, l *log.Log, r *http.Request) string {
 	}
 
 	// Add to database
-	stmt, errPrep := db.Prepare("INSERT messages SET ip=?,time=?,message=?,name=?,status=?")
+	stmt, errPrep := s.db.Prepare("INSERT messages SET ip=?,time=?,message=?,name=?,status=?")
 	if errPrep != nil {
 		return tools.JSONError(errPrep.Error())
 	}
@@ -45,6 +60,6 @@ func send(infos *data.Data, db *sql.DB, l *log.Log, r *http.Request) string {
 	}
 
 	// Elaborate response
-	l.Print("Message posted (from " + ip + ") : " + message)
+	s.logger.Print("Message posted (from " + ip + ") : " + message)
 	return tools.JSONResponseOk()
 }

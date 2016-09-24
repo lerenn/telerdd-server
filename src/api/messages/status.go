@@ -4,13 +4,30 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/lerenn/log"
 	"github.com/lerenn/telerdd-server/src/api/account"
+	"github.com/lerenn/telerdd-server/src/data"
 	"github.com/lerenn/telerdd-server/src/tools"
 )
 
-func status(db *sql.DB, r *http.Request) string {
+type Status struct {
+	// Infos
+	data   *data.Data
+	db     *sql.DB
+	logger *log.Log
+}
+
+func NewStatus(data *data.Data, db *sql.DB, logger *log.Log) *Status {
+	var s Status
+	s.data = data
+	s.db = db
+	s.logger = logger
+	return &s
+}
+
+func (s *Status) Process(r *http.Request) string {
 	// Check permission
-	errAuth := account.Authorized(db, r, 1)
+	errAuth := account.Authorized(s.db, r, 1)
 	if errAuth != nil {
 		return tools.JSONError(errAuth.Error())
 	}
@@ -30,7 +47,7 @@ func status(db *sql.DB, r *http.Request) string {
 	}
 
 	// Prepare request
-	stmt, errPrep := db.Prepare("UPDATE messages SET status=? WHERE id=?")
+	stmt, errPrep := s.db.Prepare("UPDATE messages SET status=? WHERE id=?")
 	if errPrep != nil {
 		return tools.JSONError(errPrep.Error())
 	}

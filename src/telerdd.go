@@ -15,6 +15,7 @@ import (
 )
 
 type TeleRDD struct {
+	api    *api.API
 	conf   *config.Config
 	logger *log.Log
 	db     *sql.DB
@@ -46,13 +47,29 @@ func (t *TeleRDD) Init() error {
 	}
 	t.logger.Print("Database loaded")
 
-	// Prepare server
-	if err := t.initHTTPServer(); err != nil {
+	// Prepare API
+	if err := t.initAPI(); err != nil {
 		return err
 	}
-	t.logger.Print("HTTP Server ready")
+	t.logger.Print("API Server ready")
 
 	t.logger.Print("Initialization complete")
+	return nil
+}
+
+func (t *TeleRDD) initAPI() error {
+	// Get authorized URL for client
+	authorizedOrigin, err := t.conf.GetString(CLIENT_SECTION_TOKEN, CLIENT_AUTHORIZED_ORIGIN_TOKEN)
+	if err != nil {
+		return err
+	}
+
+	// Create api
+	t.api = api.New(t.data, t.db, t.logger, authorizedOrigin)
+
+	// Set callback
+	http.HandleFunc("/", t.api.Process)
+
 	return nil
 }
 
@@ -105,23 +122,6 @@ func (t *TeleRDD) initLog() error {
 	if t.logger.Start(logFile) != nil {
 		return errors.New("Error when trying to create a new log file")
 	}
-
-	return nil
-}
-
-func (t *TeleRDD) initHTTPServer() error {
-	// Get authorized URL for client
-	authorizedOrigin, err := t.conf.GetString(CLIENT_SECTION_TOKEN, CLIENT_AUTHORIZED_ORIGIN_TOKEN)
-	if err != nil {
-		return err
-	}
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		func(w http.ResponseWriter, r *http.Request, logger *log.Log, db *sql.DB) {
-			w.Header().Set("Access-Control-Allow-Origin", authorizedOrigin)
-			fmt.Fprintf(w, api.Process(t.data, db, logger, w, r, r.URL.Path[1:]))
-		}(w, r, t.logger, t.db)
-	})
 
 	return nil
 }

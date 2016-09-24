@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/lerenn/log"
@@ -11,16 +12,42 @@ import (
 	"github.com/lerenn/telerdd-server/src/tools"
 )
 
-const Prefix = "/api/"
+type API struct {
+	// Infos
+	data             *data.Data
+	db               *sql.DB
+	logger           *log.Log
+	authorizedOrigin string
+	// API
+	account  *account.Account
+	messages *messages.Messages
+}
 
-func Process(infos *data.Data, db *sql.DB, l *log.Log, w http.ResponseWriter, r *http.Request, request string) string {
-	base, extent := tools.Split(request, "/")
+func New(data *data.Data, db *sql.DB, logger *log.Log, authorizedOrigin string) *API {
+	var a API
+	a.account = account.New(data, db, logger)
+	a.data = data
+	a.db = db
+	a.logger = logger
+	a.authorizedOrigin = authorizedOrigin
+	a.messages = messages.New(data, db, logger)
+	return &a
+}
 
+func (a *API) Process(w http.ResponseWriter, r *http.Request) {
+	base, extent := tools.Split(r.URL.Path[1:], "/")
+
+	// Authorize origin
+	w.Header().Set("Access-Control-Allow-Origin", a.authorizedOrigin)
+
+	var response string
 	if base == "messages" {
-		return messages.Process(infos, db, l, extent, r)
+		response = a.messages.Process(extent, r)
 	} else if base == "account" {
-		return account.Process(infos, db, l, extent, r)
+		response = a.account.Process(extent, r)
 	} else {
-		return tools.JSONBadURL(r)
+		response = tools.JSONBadURL(r)
 	}
+
+	fmt.Fprintf(w, response)
 }

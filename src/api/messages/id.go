@@ -6,10 +6,27 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/lerenn/log"
+	"github.com/lerenn/telerdd-server/src/data"
 	"github.com/lerenn/telerdd-server/src/tools"
 )
 
-func id(db *sql.DB, r *http.Request) string {
+type ID struct {
+	// Infos
+	data   *data.Data
+	db     *sql.DB
+	logger *log.Log
+}
+
+func NewID(data *data.Data, db *sql.DB, logger *log.Log) *ID {
+	var id ID
+	id.data = data
+	id.db = db
+	id.logger = logger
+	return &id
+}
+
+func (id *ID) Process(r *http.Request) string {
 	// Get status and start/stop
 	status := getStatus(r)
 	start, err := tools.GetIntFromRequest(r, "start")
@@ -23,7 +40,7 @@ func id(db *sql.DB, r *http.Request) string {
 
 	// Get complete list
 	sqlReq := fmt.Sprintf("SELECT id FROM messages WHERE status REGEXP %q AND (id BETWEEN %d AND %d)", status, start, stop)
-	rows, err := db.Query(sqlReq)
+	rows, err := id.db.Query(sqlReq)
 	if err != nil {
 		return tools.JSONError(err.Error())
 	}

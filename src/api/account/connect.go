@@ -11,7 +11,21 @@ import (
 	"github.com/lerenn/telerdd-server/src/tools"
 )
 
-func connect(infos *data.Data, db *sql.DB, l *log.Log, r *http.Request) string {
+type Connect struct {
+	data   *data.Data
+	db     *sql.DB
+	logger *log.Log
+}
+
+func NewConnect(data *data.Data, db *sql.DB, logger *log.Log) *Connect {
+	var c Connect
+	c.data = data
+	c.db = db
+	c.logger = logger
+	return &c
+}
+
+func (c *Connect) Process(r *http.Request) string {
 	// Get infos
 	username := r.FormValue("username")
 	psswd := r.FormValue("password")
@@ -22,7 +36,7 @@ func connect(infos *data.Data, db *sql.DB, l *log.Log, r *http.Request) string {
 
 	// Get user infos from db
 	sqlReq := fmt.Sprintf("SELECT id, password, type FROM users WHERE username = %q", username)
-	rows, err := db.Query(sqlReq)
+	rows, err := c.db.Query(sqlReq)
 	if err != nil {
 		return tools.JSONError(err.Error())
 	}
@@ -36,7 +50,7 @@ func connect(infos *data.Data, db *sql.DB, l *log.Log, r *http.Request) string {
 		}
 
 		if psswd == psswdFromDB && accountType >= accountTypeFromDB {
-			token, err := generateToken(db, id)
+			token, err := c.generateToken(id)
 			if err != nil {
 				tools.JSONError("Error when generating token : " + err.Error())
 			}
@@ -50,14 +64,14 @@ func connect(infos *data.Data, db *sql.DB, l *log.Log, r *http.Request) string {
 	return tools.JSONError("Account or password incorrect")
 }
 
-func generateToken(db *sql.DB, id int) (string, error) {
+func (c *Connect) generateToken(id int) (string, error) {
 	// Generate the token
 	b := make([]byte, TOKEN_SIZE)
 	rand.Read(b)
 	token := fmt.Sprintf("%x", b)
 
 	// Add it to the user in db
-	stmt, errPrep := db.Prepare("UPDATE users SET token=? WHERE id=?")
+	stmt, errPrep := c.db.Prepare("UPDATE users SET token=? WHERE id=?")
 	if errPrep != nil {
 		return "", errPrep
 	}

@@ -5,10 +5,27 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/lerenn/log"
+	"github.com/lerenn/telerdd-server/src/data"
 	"github.com/lerenn/telerdd-server/src/tools"
 )
 
-func next(db *sql.DB, r *http.Request) string {
+type Next struct {
+	// Infos
+	data   *data.Data
+	db     *sql.DB
+	logger *log.Log
+}
+
+func NewNext(data *data.Data, db *sql.DB, logger *log.Log) *Next {
+	var n Next
+	n.data = data
+	n.db = db
+	n.logger = logger
+	return &n
+}
+
+func (n *Next) Process(r *http.Request) string {
 	// Get status
 	status := getStatus(r)
 
@@ -31,7 +48,7 @@ func next(db *sql.DB, r *http.Request) string {
 
 	// Get complete list
 	sqlReq := fmt.Sprintf("SELECT id,message,time,name,status FROM messages WHERE status REGEXP %q AND id > %d ORDER BY id LIMIT %d", status, id, offset)
-	rows, err := db.Query(sqlReq)
+	rows, err := n.db.Query(sqlReq)
 	if err != nil {
 		return tools.JSONError(err.Error())
 	}
