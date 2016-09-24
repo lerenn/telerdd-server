@@ -37,8 +37,8 @@ func New(data *data.Data, db *sql.DB, logger *log.Log, authorizedOrigin string) 
 func (a *API) Process(w http.ResponseWriter, r *http.Request) {
 	base, extent := tools.Split(r.URL.Path[1:], "/")
 
-	// Authorize origin
-	w.Header().Set("Access-Control-Allow-Origin", a.authorizedOrigin)
+	// Set header
+	a.setHeader(w)
 
 	var response string
 	if base == "messages" {
@@ -50,4 +50,9 @@ func (a *API) Process(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, response)
+}
+
+func (a *API) setHeader(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", a.authorizedOrigin)
+	w.Header().Set("Content-Type", "application/json")
 }

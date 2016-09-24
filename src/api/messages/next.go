@@ -26,6 +26,21 @@ func NewNext(data *data.Data, db *sql.DB, logger *log.Log) *Next {
 }
 
 func (n *Next) Process(r *http.Request) string {
+	switch r.Method {
+	case "GET":
+		return n.Get(r)
+	case "POST":
+		return tools.JSONError("Method not implemented")
+	case "PUT":
+		return tools.JSONError("Method not implemented")
+	case "DELETE":
+		return tools.JSONError("Method not implemented")
+	default:
+		return tools.JSONError("Unknown HTTP Method")
+	}
+}
+
+func (n *Next) Get(r *http.Request) string {
 	// Get status
 	status := getStatus(r)
 

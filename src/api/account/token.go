@@ -11,21 +11,36 @@ import (
 	"github.com/lerenn/telerdd-server/src/tools"
 )
 
-type Connect struct {
+type Token struct {
 	data   *data.Data
 	db     *sql.DB
 	logger *log.Log
 }
 
-func NewConnect(data *data.Data, db *sql.DB, logger *log.Log) *Connect {
-	var c Connect
-	c.data = data
-	c.db = db
-	c.logger = logger
-	return &c
+func NewToken(data *data.Data, db *sql.DB, logger *log.Log) *Token {
+	var t Token
+	t.data = data
+	t.db = db
+	t.logger = logger
+	return &t
 }
 
-func (c *Connect) Process(r *http.Request) string {
+func (t *Token) Process(r *http.Request) string {
+	switch r.Method {
+	case "GET":
+		return t.Get(r)
+	case "POST":
+		return tools.JSONError("Method not implemented")
+	case "PUT":
+		return tools.JSONError("Method not implemented")
+	case "DELETE":
+		return tools.JSONError("Method not implemented")
+	default:
+		return tools.JSONError("Unknown HTTP Method")
+	}
+}
+
+func (t *Token) Get(r *http.Request) string {
 	// Get infos
 	username := r.FormValue("username")
 	psswd := r.FormValue("password")
@@ -36,7 +51,7 @@ func (c *Connect) Process(r *http.Request) string {
 
 	// Get user infos from db
 	sqlReq := fmt.Sprintf("SELECT id, password, type FROM users WHERE username = %q", username)
-	rows, err := c.db.Query(sqlReq)
+	rows, err := t.db.Query(sqlReq)
 	if err != nil {
 		return tools.JSONError(err.Error())
 	}
@@ -50,7 +65,7 @@ func (c *Connect) Process(r *http.Request) string {
 		}
 
 		if psswd == psswdFromDB && accountType >= accountTypeFromDB {
-			token, err := c.generateToken(id)
+			token, err := t.generateToken(id)
 			if err != nil {
 				tools.JSONError("Error when generating token : " + err.Error())
 			}
@@ -64,14 +79,17 @@ func (c *Connect) Process(r *http.Request) string {
 	return tools.JSONError("Account or password incorrect")
 }
 
-func (c *Connect) generateToken(id int) (string, error) {
+// Private methods
+////////////////////////////////////////////////////////////////////////////////
+
+func (t *Token) generateToken(id int) (string, error) {
 	// Generate the token
 	b := make([]byte, TOKEN_SIZE)
 	rand.Read(b)
 	token := fmt.Sprintf("%x", b)
 
 	// Add it to the user in db
-	stmt, errPrep := c.db.Prepare("UPDATE users SET token=? WHERE id=?")
+	stmt, errPrep := t.db.Prepare("UPDATE users SET token=? WHERE id=?")
 	if errPrep != nil {
 		return "", errPrep
 	}

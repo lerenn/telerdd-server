@@ -15,7 +15,7 @@ type Account struct {
 	db     *sql.DB
 	logger *log.Log
 	// API
-	connect *Connect
+	token *Token
 }
 
 func New(data *data.Data, db *sql.DB, logger *log.Log) *Account {
@@ -23,15 +23,15 @@ func New(data *data.Data, db *sql.DB, logger *log.Log) *Account {
 	a.data = data
 	a.db = db
 	a.logger = logger
-	a.connect = NewConnect(data, db, logger)
+	a.token = NewToken(data, db, logger)
 	return &a
 }
 
 func (a *Account) Process(request string, r *http.Request) string {
 	base, _ := tools.Split(request, "/")
 
-	if base == "connect" {
-		return a.connect.Process(r)
+	if base == "token" {
+		return a.token.Process(r)
 	} else {
 		return tools.JSONBadURL(r)
 	}
