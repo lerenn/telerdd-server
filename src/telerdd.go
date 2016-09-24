@@ -57,6 +57,17 @@ func (t *TeleRDD) Init() error {
 	return nil
 }
 
+func (t *TeleRDD) Start() error {
+	return http.ListenAndServe(":8080", nil)
+}
+
+func (t *TeleRDD) CloseDB() {
+	t.db.Close()
+}
+
+// Private methods
+////////////////////////////////////////////////////////////////////////////////
+
 func (t *TeleRDD) initAPI() error {
 	// Get authorized URL for client
 	authorizedOrigin, err := t.conf.GetString(CLIENT_SECTION_TOKEN, CLIENT_AUTHORIZED_ORIGIN_TOKEN)
@@ -134,12 +145,4 @@ func (t *TeleRDD) initData() error {
 
 	t.data = data.New(msgLimit)
 	return nil
-}
-
-func (t *TeleRDD) Start() error {
-	return http.ListenAndServe(":8080", nil)
-}
-
-func (t *TeleRDD) CloseDB() {
-	t.db.Close()
 }
