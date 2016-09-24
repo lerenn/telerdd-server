@@ -6,8 +6,7 @@ import (
 	"net/http"
 
 	"github.com/lerenn/log"
-	"github.com/lerenn/telerdd-server/src/api/account"
-	"github.com/lerenn/telerdd-server/src/api/messages"
+	"github.com/lerenn/telerdd-server/src/api/v1"
 	"github.com/lerenn/telerdd-server/src/data"
 	"github.com/lerenn/telerdd-server/src/tools"
 )
@@ -19,18 +18,16 @@ type API struct {
 	logger           *log.Log
 	authorizedOrigin string
 	// API
-	account  *account.Account
-	messages *messages.Messages
+	v1 *v1.V1
 }
 
 func New(data *data.Data, db *sql.DB, logger *log.Log, authorizedOrigin string) *API {
 	var a API
-	a.account = account.New(data, db, logger)
 	a.data = data
 	a.db = db
 	a.logger = logger
 	a.authorizedOrigin = authorizedOrigin
-	a.messages = messages.New(data, db, logger)
+	a.v1 = v1.New(data, db, logger)
 	return &a
 }
 
@@ -41,10 +38,8 @@ func (a *API) Process(w http.ResponseWriter, r *http.Request) {
 	a.setHeader(w)
 
 	var response string
-	if base == "messages" {
-		response = a.messages.Process(extent, r)
-	} else if base == "account" {
-		response = a.account.Process(extent, r)
+	if base == "v1" {
+		response = a.v1.Process(extent, r)
 	} else {
 		response = tools.JSONBadURL(r)
 	}
