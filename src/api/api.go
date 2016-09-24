@@ -49,5 +49,6 @@ func (a *API) Process(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) setHeader(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", a.authorizedOrigin)
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
 	w.Header().Set("Content-Type", "application/json")
 }
