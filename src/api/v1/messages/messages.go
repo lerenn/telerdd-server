@@ -17,9 +17,7 @@ type Messages struct {
 	db     *sql.DB
 	logger *log.Log
 	// API
-	next     *Next
-	previous *Previous
-	message  *Message
+	message *Message
 }
 
 func New(data *data.Data, db *sql.DB, logger *log.Log) *Messages {
@@ -27,8 +25,6 @@ func New(data *data.Data, db *sql.DB, logger *log.Log) *Messages {
 	m.data = data
 	m.db = db
 	m.logger = logger
-	m.next = NewNext(data, db, logger)
-	m.previous = NewPrevious(data, db, logger)
 	m.message = NewMessage(data, db, logger)
 	return &m
 }
@@ -41,7 +37,7 @@ func (m *Messages) Process(request string, r *http.Request) string {
 		case "GET":
 			return m.Get(r)
 		case "POST":
-			return tools.JSONError("Method not implemented")
+			return m.Post(r)
 		case "PUT":
 			return tools.JSONError("Method not implemented")
 		case "DELETE":
@@ -49,10 +45,6 @@ func (m *Messages) Process(request string, r *http.Request) string {
 		default:
 			return tools.JSONError("Unknown HTTP Method")
 		}
-	} else if base == "next" {
-		return m.next.Process(r)
-	} else if base == "previous" {
-		return m.previous.Process(r)
 	} else if base == "message" {
 		return m.message.Process(r)
 	} else {
@@ -61,19 +53,31 @@ func (m *Messages) Process(request string, r *http.Request) string {
 }
 
 func (m *Messages) Get(r *http.Request) string {
-	// Get status and start/stop
+	// Get arguments
 	status := getStatus(r)
-	start, err := tools.GetIntFromRequest(r, "start")
-	if err != nil || start < 0 {
-		start = 0
+	requestArgs := fmt.Sprintf("status REGEXP %q", status)
+
+	start, present, err := tools.GetIntFromRequest(r, "start")
+	if err != nil {
+		return tools.JSONError("Error in 'start' argument")
+	} else if present {
+		requestArgs = fmt.Sprintf("%s AND id >= %d", requestArgs, start)
 	}
-	stop, err := tools.GetIntFromRequest(r, "stop")
-	if err != nil || stop < 0 {
-		stop = 1000000
+	stop, present, err := tools.GetIntFromRequest(r, "stop")
+	if err != nil {
+		return tools.JSONError("Error in 'stop' argument")
+	} else if present {
+		requestArgs = fmt.Sprintf("%s AND id <= %d", requestArgs, stop)
+	}
+	offset, present, err := tools.GetIntFromRequest(r, "offset")
+	if err != nil {
+		return tools.JSONError("Error in 'offset' argument")
+	} else if present {
+		requestArgs = fmt.Sprintf("%s LIMIT %d", requestArgs, offset)
 	}
 
 	// Get complete list
-	sqlReq := fmt.Sprintf("SELECT id FROM messages WHERE status REGEXP %q AND (id BETWEEN %d AND %d)", status, start, stop)
+	sqlReq := fmt.Sprintf("SELECT id FROM messages WHERE %s", requestArgs)
 	rows, err := m.db.Query(sqlReq)
 	if err != nil {
 		return tools.JSONError(err.Error())
@@ -94,5 +98,44 @@ func (m *Messages) Get(r *http.Request) string {
 		response += strconv.Itoa(list)
 	}
 
-	return "{\"list\":[" + response + "]}"
+	return "{\"messages\":[" + response + "]}"
+}
+
+func (m *Messages) Post(r *http.Request) string {
+	// Check if authorized
+	ip := tools.GetIp(r)
+	t, err := m.data.ProceedMessageLimit(ip)
+	if err != nil {
+		return tools.JSONError("Error when check older messages: " + err.Error())
+	} else if t != -1 {
+		errStr := fmt.Sprintf("You already sent (or tried to send) a message %d seconds ago (from %s). Please wait.", t, ip)
+		return tools.JSONError(errStr)
+	}
+
+	// Get message from request and format
+	message := r.FormValue("message")
+	if message == "" {
+		return tools.JSONError("No text in your message")
+	}
+	message = tools.ReplaceBadCharacters(message)
+
+	name := r.FormValue("name")
+	if name == "" {
+		name = "Anonymous"
+	}
+
+	// Add to database
+	stmt, errPrep := m.db.Prepare("INSERT messages SET ip=?,time=?,message=?,name=?,status=?")
+	if errPrep != nil {
+		return tools.JSONError(errPrep.Error())
+	}
+
+	_, errExec := stmt.Exec(ip, tools.SQLTimeNow(), message, name, "pending")
+	if errExec != nil {
+		return tools.JSONError(errExec.Error())
+	}
+
+	// Elaborate response
+	m.logger.Print("Message posted (from " + ip + ") : " + message)
+	return tools.JSONResponseOk()
 }

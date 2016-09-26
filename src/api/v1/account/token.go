@@ -44,7 +44,7 @@ func (t *Token) Get(r *http.Request) string {
 	// Get infos
 	username := r.FormValue("username")
 	psswd := r.FormValue("password")
-	accountType, errType := tools.GetIntFromRequest(r, "type")
+	accountType, _, errType := tools.GetIntFromRequest(r, "type")
 	if errType != nil {
 		return tools.JSONError(errType.Error())
 	}

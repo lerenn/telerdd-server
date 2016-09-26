@@ -31,7 +31,7 @@ func (m *Message) Process(r *http.Request) string {
 	case "GET":
 		return m.Get(r)
 	case "POST":
-		return m.Post(r)
+		return tools.JSONError("Method not implemented")
 	case "PUT":
 		return m.Put(r)
 	case "DELETE":
@@ -43,7 +43,7 @@ func (m *Message) Process(r *http.Request) string {
 
 func (m *Message) Get(r *http.Request) string {
 	// Get id
-	id, err := tools.GetIntFromRequest(r, "id")
+	id, _, err := tools.GetIntFromRequest(r, "id")
 	if err != nil {
 		return tools.JSONError("Invalid number for id")
 	} else if id < 0 {
@@ -78,45 +78,6 @@ func (m *Message) Get(r *http.Request) string {
 	return tools.JSONError("No message corresponding to this Message")
 }
 
-func (m *Message) Post(r *http.Request) string {
-	// Check if authorized
-	ip := tools.GetIp(r)
-	t, err := m.data.ProceedMessageLimit(ip)
-	if err != nil {
-		return tools.JSONError("Error when check older messages: " + err.Error())
-	} else if t != -1 {
-		errStr := fmt.Sprintf("You already sent (or tried to send) a message %d seconds ago (from %s). Please wait.", t, ip)
-		return tools.JSONError(errStr)
-	}
-
-	// Get message from request and format
-	message := r.FormValue("message")
-	if message == "" {
-		return tools.JSONError("No text in your message")
-	}
-	message = tools.ReplaceBadCharacters(message)
-
-	name := r.FormValue("name")
-	if name == "" {
-		name = "Anonymous"
-	}
-
-	// Add to database
-	stmt, errPrep := m.db.Prepare("INSERT messages SET ip=?,time=?,message=?,name=?,status=?")
-	if errPrep != nil {
-		return tools.JSONError(errPrep.Error())
-	}
-
-	_, errExec := stmt.Exec(ip, tools.SQLTimeNow(), message, name, "pending")
-	if errExec != nil {
-		return tools.JSONError(errExec.Error())
-	}
-
-	// Elaborate response
-	m.logger.Print("Message posted (from " + ip + ") : " + message)
-	return tools.JSONResponseOk()
-}
-
 func (m *Message) Put(r *http.Request) string {
 	// Check permission
 	errAuth := account.Authorized(m.db, r, 1)
@@ -125,7 +86,7 @@ func (m *Message) Put(r *http.Request) string {
 	}
 
 	// Get id
-	id, err := tools.GetIntFromRequest(r, "id")
+	id, _, err := tools.GetIntFromRequest(r, "id")
 	if err != nil {
 		return tools.JSONError("Invalid number for id")
 	} else if id < 0 {
