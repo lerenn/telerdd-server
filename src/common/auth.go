@@ -26,6 +26,7 @@ func Authorized(db *sql.DB, r *http.Request, accountType int) error {
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
 	if rows.Next() {
 		var accountTypeFromDB int

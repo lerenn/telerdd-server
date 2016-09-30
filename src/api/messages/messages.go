@@ -81,6 +81,7 @@ func (m *Messages) Get(r *http.Request) string {
 	if err != nil {
 		return common.JSONError(err.Error())
 	}
+	defer rows.Close()
 
 	var response string
 	for i := 0; rows.Next(); i++ {

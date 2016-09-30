@@ -55,6 +55,7 @@ func (t *Token) Get(r *http.Request) string {
 	if err != nil {
 		return common.JSONError(err.Error())
 	}
+	defer rows.Close()
 
 	if rows.Next() {
 		// Get password
