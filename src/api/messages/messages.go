@@ -44,10 +44,8 @@ func (m *Messages) Process(request string, r *http.Request) string {
 		default:
 			return common.JSONError("Unknown HTTP Method")
 		}
-	} else if base == "message" {
-		return m.message.Process(r)
 	} else {
-		return common.JSONBadURL(r)
+		return m.message.Process(r, request)
 	}
 }
 

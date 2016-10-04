@@ -4,13 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/lerenn/log"
 	"github.com/lerenn/telerdd-server/src/common"
 )
 
 type Message struct {
-	// Infos
 	data   *common.Data
 	db     *sql.DB
 	logger *log.Log
@@ -24,14 +24,23 @@ func NewMessage(data *common.Data, db *sql.DB, logger *log.Log) *Message {
 	return &m
 }
 
-func (m *Message) Process(r *http.Request) string {
+func (m *Message) Process(r *http.Request, request string) string {
+	base, _ := common.Split(request, "/")
+
+	// Convert to number
+	id, err := strconv.Atoi(base)
+	if err != nil || id < 0 {
+		errStr := fmt.Sprintf("Invalid message id : %q", base)
+		return common.JSONError(errStr)
+	}
+
 	switch r.Method {
 	case "GET":
-		return m.Get(r)
+		return m.Get(r, id)
 	case "POST":
 		return common.JSONError("Method not implemented")
 	case "PUT":
-		return m.Put(r)
+		return m.Put(r, id)
 	case "DELETE":
 		return common.JSONError("Method not implemented")
 	default:
@@ -39,16 +48,7 @@ func (m *Message) Process(r *http.Request) string {
 	}
 }
 
-func (m *Message) Get(r *http.Request) string {
-	// Get id
-	id, _, err := common.GetIntFromRequest(r, "id")
-	if err != nil {
-		return common.JSONError("Invalid number for id")
-	} else if id < 0 {
-		errStr := fmt.Sprintf("Invalid number for id (%d)", id)
-		return common.JSONError(errStr)
-	}
-
+func (m *Message) Get(r *http.Request, id int) string {
 	// Get complete list
 	sqlReq := fmt.Sprintf("SELECT id,message,time,name,status FROM messages WHERE id = %d", id)
 	rows, err := m.db.Query(sqlReq)
@@ -77,19 +77,11 @@ func (m *Message) Get(r *http.Request) string {
 	return common.JSONError("No message corresponding to this Message")
 }
 
-func (m *Message) Put(r *http.Request) string {
+func (m *Message) Put(r *http.Request, id int) string {
 	// Check permission
 	errAuth := common.Authorized(m.db, r, 1)
 	if errAuth != nil {
 		return common.JSONError(errAuth.Error())
-	}
-
-	// Get id
-	id, _, err := common.GetIntFromRequest(r, "id")
-	if err != nil {
-		return common.JSONError("Invalid number for id")
-	} else if id < 0 {
-		id = 0
 	}
 
 	// Get status
