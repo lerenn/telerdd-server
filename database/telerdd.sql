@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Sep 18, 2016 at 12:10 PM
+-- Generation Time: Oct 05, 2016 at 08:53 PM
 -- Server version: 5.7.15
 -- PHP Version: 5.6.25
 
@@ -19,8 +19,19 @@ SET time_zone = "+00:00";
 --
 -- Database: `telerdd`
 --
-CREATE DATABASE IF NOT EXISTS `telerdd` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
-USE `telerdd`;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `images`
+--
+
+CREATE TABLE `images` (
+  `id` smallint(5) UNSIGNED NOT NULL,
+  `time` datetime NOT NULL,
+  `msg_id` smallint(6) NOT NULL,
+  `img` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -33,6 +44,7 @@ CREATE TABLE `messages` (
   `ip` varchar(16) NOT NULL,
   `time` datetime NOT NULL,
   `message` text NOT NULL,
+  `img` tinyint(1) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `status` varchar(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -58,12 +70,18 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `lastconnection`, `token`, `retries`, `type`) VALUES
-(1, 'admin', '21232f297a57a5a743894a0e4a801fc3', NULL, '367951baa2ff6cd471c483f15fb90badb37c5821', NULL, 1),
+(1, 'admin', '21232f297a57a5a743894a0e4a801fc3', NULL, '52fdfc072182654f163f5f0f9a621d729566c74d', NULL, 1),
 (2, 'barman', '1e7f0bbc56c5ba6791108be53a75f494', NULL, '52fdfc072182654f163f5f0f9a621d729566c74d', NULL, 2);
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `images`
+--
+ALTER TABLE `images`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `messages`
@@ -82,10 +100,15 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `images`
+--
+ALTER TABLE `images`
+  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT;
+--
 -- AUTO_INCREMENT for table `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `users`
 --
