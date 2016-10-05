@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/lerenn/log"
+	"github.com/lerenn/telerdd-server/src/api/messages/message"
 	"github.com/lerenn/telerdd-server/src/common"
 )
 
@@ -16,7 +17,7 @@ type Messages struct {
 	db     *sql.DB
 	logger *log.Log
 	// API
-	message *Message
+	msg *message.Message
 }
 
 func New(data *common.Data, db *sql.DB, logger *log.Log) *Messages {
@@ -24,13 +25,14 @@ func New(data *common.Data, db *sql.DB, logger *log.Log) *Messages {
 	m.data = data
 	m.db = db
 	m.logger = logger
-	m.message = NewMessage(data, db, logger)
+	m.msg = message.New(data, db, logger)
 	return &m
 }
 
 func (m *Messages) Process(request string, r *http.Request) string {
-	base, _ := common.Split(request, "/")
+	base, extend := common.Split(request, "/")
 
+	// If nothing more
 	if base == "" {
 		switch r.Method {
 		case "GET":
@@ -44,9 +46,15 @@ func (m *Messages) Process(request string, r *http.Request) string {
 		default:
 			return common.JSONError("Unknown HTTP Method")
 		}
-	} else {
-		return m.message.Process(r, request)
 	}
+
+	// Let message take care of the request : get id
+	id, err := strconv.Atoi(base)
+	if err != nil || id < 0 {
+		errStr := fmt.Sprintf("Invalid message id : %q", base)
+		return common.JSONError(errStr)
+	}
+	return m.msg.Process(r, id, extend)
 }
 
 func (m *Messages) Get(r *http.Request) string {
@@ -123,17 +131,38 @@ func (m *Messages) Post(r *http.Request) string {
 	}
 
 	// Add to database
-	stmt, errPrep := m.db.Prepare("INSERT messages SET ip=?,time=?,message=?,name=?,status=?")
-	if errPrep != nil {
-		return common.JSONError(errPrep.Error())
+	stmt, err := m.db.Prepare("INSERT messages SET ip=?,time=?,message=?,img=?,name=?,status=?")
+	if err != nil {
+		return common.JSONError(err.Error())
 	}
 
-	_, errExec := stmt.Exec(ip, common.SQLTimeNow(), message, name, "pending")
-	if errExec != nil {
-		return common.JSONError(errExec.Error())
+	res, err := stmt.Exec(ip, common.SQLTimeNow(), message, false, name, "pending")
+	if err != nil {
+		return common.JSONError(err.Error())
+	}
+
+	// Get id
+	id, err := res.LastInsertId()
+	if err != nil {
+		return common.JSONError(err.Error())
 	}
 
 	// Elaborate response
 	m.logger.Print("Message posted (from " + ip + ") : " + message)
-	return common.JSONResponseOk()
+	return fmt.Sprintf("{\"id\":%d}", id)
+}
+
+// Private functions
+////////////////////////////////////////////////////////////////////////////////
+
+func getStatus(r *http.Request) string {
+	status := r.FormValue("status")
+	if status == "rejected" {
+		return "rejected"
+	} else if status == "pending" {
+		return "pending"
+	} else if status == "all" {
+		return ".*"
+	}
+	return "accepted"
 }
