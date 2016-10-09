@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Oct 05, 2016 at 08:53 PM
+-- Generation Time: Oct 09, 2016 at 02:58 PM
 -- Server version: 5.7.15
 -- PHP Version: 5.6.25
 
@@ -19,6 +19,8 @@ SET time_zone = "+00:00";
 --
 -- Database: `telerdd`
 --
+CREATE DATABASE IF NOT EXISTS `telerdd` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
+USE `telerdd`;
 
 -- --------------------------------------------------------
 
@@ -70,8 +72,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `lastconnection`, `token`, `retries`, `type`) VALUES
-(1, 'admin', '21232f297a57a5a743894a0e4a801fc3', NULL, '52fdfc072182654f163f5f0f9a621d729566c74d', NULL, 1),
-(2, 'barman', '1e7f0bbc56c5ba6791108be53a75f494', NULL, '52fdfc072182654f163f5f0f9a621d729566c74d', NULL, 2);
+(1, 'admin', '21232f297a57a5a743894a0e4a801fc3', NULL, '86216325253fec738dd7a9e28bf921119c160f07', NULL, 1);
 
 --
 -- Indexes for dumped tables
@@ -103,12 +104,12 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `images`
 --
 ALTER TABLE `images`
-  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 --
 -- AUTO_INCREMENT for table `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 --
 -- AUTO_INCREMENT for table `users`
 --

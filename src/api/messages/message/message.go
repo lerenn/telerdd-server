@@ -51,7 +51,6 @@ func (m *Message) Process(r *http.Request, id int, request string) string {
 }
 
 func (m *Message) Get(r *http.Request, id int) string {
-	// Get complete list
 	sqlReq := fmt.Sprintf("SELECT id,time,message,img,name,status FROM messages WHERE id = %d", id)
 	rows, err := m.db.Query(sqlReq)
 	if err != nil {
@@ -77,7 +76,7 @@ func (m *Message) Get(r *http.Request, id int) string {
 		return common.MessageToJSON(id, img, txt, time, name, status)
 	}
 
-	return common.JSONError("No message corresponding to this Message")
+	return common.JSONError("No message corresponding to this ID")
 }
 
 func (m *Message) Put(r *http.Request, id int) string {
