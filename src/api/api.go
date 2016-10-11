@@ -7,19 +7,16 @@ import (
 
 	config "github.com/lerenn/go-config"
 	"github.com/lerenn/log"
-	"github.com/lerenn/telerdd-server/src/api/account"
-	"github.com/lerenn/telerdd-server/src/api/messages"
-	"github.com/lerenn/telerdd-server/src/common"
 	cst "github.com/lerenn/telerdd-server/src/constants"
 )
 
 type API struct {
-	data     *common.Data
-	account  *account.Account
-	messages *messages.Messages
+	data     *Data
+	account  *Account
+	messages *Messages
 }
 
-func New(c *config.Config, db *sql.DB, logger *log.Log) (*API, error) {
+func NewAPI(c *config.Config, db *sql.DB, logger *log.Log) (*API, error) {
 	// Get msg limit
 	msgLimit, err := c.GetInt(cst.MESSAGES_SECTION_TOKEN, cst.MESSAGES_LIMIT_TOKEN)
 	if err != nil {
@@ -33,15 +30,15 @@ func New(c *config.Config, db *sql.DB, logger *log.Log) (*API, error) {
 	}
 
 	// Create api data
-	data := common.NewData()
+	data := newData()
 	data.SetMsgLimit(msgLimit)
 	data.SetAuthorizedOrigin(authorizedOrigin)
 
 	// Create API
 	var a API
 	a.data = data
-	a.account = account.New(data, db, logger)
-	a.messages = messages.New(data, db, logger)
+	a.account = newAccount(data, db, logger)
+	a.messages = newMessages(data, db, logger)
 
 	// Set callback
 	http.HandleFunc("/", a.Process)
@@ -50,7 +47,7 @@ func New(c *config.Config, db *sql.DB, logger *log.Log) (*API, error) {
 }
 
 func (a *API) Process(w http.ResponseWriter, r *http.Request) {
-	base, extent := common.Split(r.URL.Path[1:], "/")
+	base, extent := splitString(r.URL.Path[1:], "/")
 
 	// Set header
 	a.setHeader(w)
@@ -62,7 +59,7 @@ func (a *API) Process(w http.ResponseWriter, r *http.Request) {
 	} else if base == "account" {
 		response = a.account.Process(extent, r)
 	} else {
-		response = common.JSONBadURL(r)
+		response = jsonBadURL(r)
 	}
 
 	fmt.Fprintf(w, response)

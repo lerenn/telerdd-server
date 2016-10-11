@@ -34,7 +34,7 @@ func main() {
 	logger.Print("Database loaded")
 
 	// Prepare API
-	_, err = api.New(conf, db, logger)
+	_, err = api.NewAPI(conf, db, logger)
 	if err != nil {
 		logger.Print(err.Error())
 	}
