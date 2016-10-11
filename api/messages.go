@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"text/template"
 
 	"github.com/lerenn/log"
 )
@@ -121,18 +122,25 @@ func (m *Messages) Post(r *http.Request) string {
 	name := r.FormValue("name")
 	if name == "" {
 		name = "Anonymous"
+	} else {
+		name = template.HTMLEscapeString(name)
 	}
 
 	// Get img from request
 	img := r.FormValue("image")
 	imgPresence := strings.Contains(img, "base64") || strings.Contains(img, "http")
+	if imgPresence {
+		img = template.HTMLEscapeString(img)
+	}
 
 	// Get message from request
 	message := r.FormValue("message")
 	if message == "" && imgPresence == false {
 		return jsonError("No text in your message")
+	} else if message != "" {
+		message = replaceBadChar(message)
+		message = template.HTMLEscapeString(message)
 	}
-	message = replaceBadChar(message)
 
 	// Add to database
 	stmt, err := m.db.Prepare("INSERT messages SET ip=?,time=?,message=?,img=?,name=?,status=?")
