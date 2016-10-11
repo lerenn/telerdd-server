@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/lerenn/log"
-	cst "github.com/lerenn/telerdd-server/src/constants"
+	cst "github.com/lerenn/telerdd-server/constants"
 )
 
 type Token struct {

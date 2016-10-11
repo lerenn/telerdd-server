@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/lerenn/telerdd-server/src/api"
+	"github.com/lerenn/telerdd-server/api"
+	"github.com/lerenn/telerdd-server/config"
+	"github.com/lerenn/telerdd-server/db"
 )
 
 const NO_DATE = "[###]"
@@ -13,28 +15,28 @@ func main() {
 	fmt.Println(NO_DATE + " App launched")
 
 	// Prepare config
-	conf, err := initConfig()
+	conf, err := config.New()
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 	fmt.Println(NO_DATE + " Configuration loaded")
 
 	// Prepare log
-	logger, err := initLog(conf)
+	logger, err := newLog(conf)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 	logger.Print("Log file loaded")
 
 	// Prepare DB
-	db, err := initDB(conf)
+	db, err := db.New(conf)
 	if err != nil {
 		logger.Print(err.Error())
 	}
 	logger.Print("Database loaded")
 
 	// Prepare API
-	_, err = api.NewAPI(conf, db, logger)
+	_, err = api.New(conf, db, logger)
 	if err != nil {
 		logger.Print(err.Error())
 	}

@@ -1,13 +1,13 @@
-package main
+package db
 
 import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	config "github.com/lerenn/go-config"
-	cst "github.com/lerenn/telerdd-server/src/constants"
+	cst "github.com/lerenn/telerdd-server/constants"
 )
 
-func initDB(c *config.Config) (*sql.DB, error) {
+func New(c *config.Config) (*sql.DB, error) {
 	var user, password, addr, port, name string
 	var err error
 

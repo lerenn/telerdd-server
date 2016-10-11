@@ -1,12 +1,12 @@
-package main
+package config
 
 import (
 	"errors"
 	config "github.com/lerenn/go-config"
-	cst "github.com/lerenn/telerdd-server/src/constants"
+	cst "github.com/lerenn/telerdd-server/constants"
 )
 
-func initConfig() (*config.Config, error) {
+func New() (*config.Config, error) {
 	conf := config.New()
 	if err := conf.Read(cst.CONFIG_FILE); err != nil {
 		return conf, errors.New("Error when reading config file.")

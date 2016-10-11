@@ -7,7 +7,7 @@ import (
 
 	config "github.com/lerenn/go-config"
 	"github.com/lerenn/log"
-	cst "github.com/lerenn/telerdd-server/src/constants"
+	cst "github.com/lerenn/telerdd-server/constants"
 )
 
 type API struct {
@@ -16,7 +16,7 @@ type API struct {
 	messages *Messages
 }
 
-func NewAPI(c *config.Config, db *sql.DB, logger *log.Log) (*API, error) {
+func New(c *config.Config, db *sql.DB, logger *log.Log) (*API, error) {
 	// Get msg limit
 	msgLimit, err := c.GetInt(cst.MESSAGES_SECTION_TOKEN, cst.MESSAGES_LIMIT_TOKEN)
 	if err != nil {
