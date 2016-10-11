@@ -138,8 +138,8 @@ func (m *Messages) Post(r *http.Request) string {
 	if message == "" && imgPresence == false {
 		return jsonError("No text in your message")
 	} else if message != "" {
-		message = replaceBadChar(message)
 		message = template.HTMLEscapeString(message)
+		message = replaceBadChar(message)
 	}
 
 	// Add to database
