@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/lerenn/log"
 )
@@ -116,17 +117,22 @@ func (m *Messages) Post(r *http.Request) string {
 		return jsonError(errStr)
 	}
 
-	// Get message from request and format
+	// Get message from request
 	message := r.FormValue("message")
 	if message == "" {
 		return jsonError("No text in your message")
 	}
 	message = replaceBadChar(message)
 
+	// Get name from request
 	name := r.FormValue("name")
 	if name == "" {
 		name = "Anonymous"
 	}
+
+	// Get img from request
+	img := r.FormValue("image")
+	imgPresence := strings.Contains(img, "base64") || strings.Contains(img, "http")
 
 	// Add to database
 	stmt, err := m.db.Prepare("INSERT messages SET ip=?,time=?,message=?,img=?,name=?,status=?")
@@ -134,7 +140,7 @@ func (m *Messages) Post(r *http.Request) string {
 		return jsonError(err.Error())
 	}
 
-	res, err := stmt.Exec(ip, sqlTimeNow(), message, false, name, "pending")
+	res, err := stmt.Exec(ip, sqlTimeNow(), message, imgPresence, name, "pending")
 	if err != nil {
 		return jsonError(err.Error())
 	}
@@ -143,6 +149,13 @@ func (m *Messages) Post(r *http.Request) string {
 	id, err := res.LastInsertId()
 	if err != nil {
 		return jsonError(err.Error())
+	}
+
+	// Save image
+	if imgPresence {
+		if err := saveImage(m.db,img,int(id)); err != nil {
+			return jsonError(err.Error())
+		}
 	}
 
 	// Elaborate response

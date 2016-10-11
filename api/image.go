@@ -65,31 +65,39 @@ func (i *Image) Post(r *http.Request, id int) string {
 		return jsonError("No image provided")
 	}
 
-	// TODO: Check if there is no image
+	if err := saveImage(i.db,image,id); err != nil {
+		return jsonError(err.Error())
+	}
+	return jsonResponseOk()
+}
+
+// Save image
+func saveImage(db *sql.DB, img string, id int) error {
+	// TODO: Check if there is already an image
 
 	// Prepare add to database
-	stmt, err := i.db.Prepare("INSERT images SET time=?,msg_id=?,img=?")
+	stmt, err := db.Prepare("INSERT images SET time=?,msg_id=?,img=?")
 	if err != nil {
-		return jsonError(err.Error())
+		return err
 	}
 
 	// Exec request
-	_, err = stmt.Exec(sqlTimeNow(), id, image)
+	_, err = stmt.Exec(sqlTimeNow(), id, img)
 	if err != nil {
-		return jsonError(err.Error())
+		return err
 	}
 
 	// Prepare request
-	stmt, errPrep := i.db.Prepare("UPDATE messages SET img=? WHERE id=?")
+	stmt, errPrep := db.Prepare("UPDATE messages SET img=? WHERE id=?")
 	if errPrep != nil {
-		return jsonError(errPrep.Error())
+		return errPrep
 	}
 
 	// Exec request
 	_, errExec := stmt.Exec(true, id)
 	if errExec != nil {
-		return jsonError(errExec.Error())
+		return errExec
 	}
 
-	return jsonResponseOk()
+	return nil
 }
