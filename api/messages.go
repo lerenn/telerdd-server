@@ -117,13 +117,6 @@ func (m *Messages) Post(r *http.Request) string {
 		return jsonError(errStr)
 	}
 
-	// Get message from request
-	message := r.FormValue("message")
-	if message == "" {
-		return jsonError("No text in your message")
-	}
-	message = replaceBadChar(message)
-
 	// Get name from request
 	name := r.FormValue("name")
 	if name == "" {
@@ -133,6 +126,13 @@ func (m *Messages) Post(r *http.Request) string {
 	// Get img from request
 	img := r.FormValue("image")
 	imgPresence := strings.Contains(img, "base64") || strings.Contains(img, "http")
+
+	// Get message from request
+	message := r.FormValue("message")
+	if message == "" && imgPresence == false {
+		return jsonError("No text in your message")
+	}
+	message = replaceBadChar(message)
 
 	// Add to database
 	stmt, err := m.db.Prepare("INSERT messages SET ip=?,time=?,message=?,img=?,name=?,status=?")
@@ -151,7 +151,7 @@ func (m *Messages) Post(r *http.Request) string {
 		return jsonError(err.Error())
 	}
 
-	// Save image
+	// Save image if there is one
 	if imgPresence {
 		if err := saveImage(m.db,img,int(id)); err != nil {
 			return jsonError(err.Error())
