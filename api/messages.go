@@ -129,8 +129,9 @@ func (m *Messages) Post(r *http.Request) string {
 	// Get img from request
 	img := r.FormValue("image")
 	imgPresence := strings.Contains(img, "base64") || strings.Contains(img, "http")
-	if imgPresence {
-		img = template.HTMLEscapeString(img)
+	// Process img
+	if img, err = processImg(img); err != nil {
+		return jsonError(err.Error())
 	}
 
 	// Get message from request
@@ -161,7 +162,7 @@ func (m *Messages) Post(r *http.Request) string {
 
 	// Save image if there is one
 	if imgPresence {
-		if err := saveImage(m.db,img,int(id)); err != nil {
+		if err := saveImg(m.db,img,int(id)); err != nil {
 			return jsonError(err.Error())
 		}
 	}

@@ -90,6 +90,6 @@ func splitString(line, separator string) (string, string) {
 	if index < 0 {
 		return line, ""
 	} else {
-		return line[:index], line[index+1:]
+		return line[:index], line[index+len(separator):]
 	}
 }

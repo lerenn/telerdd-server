@@ -25,11 +25,17 @@
 			"revisionTime": "2016-08-31T15:27:09Z"
 		},
 		{
+			"checksumSHA1": "r5eQHkttko6kxroDEENXbmXKrSs=",
+			"path": "github.com/nfnt/resize",
+			"revision": "891127d8d1b52734debe1b3c3d7e747502b6c366",
+			"revisionTime": "2016-07-24T20:39:20Z"
+		},
+		{
 			"checksumSHA1": "JMJsgixpFXYflvo4Ho00OVhJlg0=",
 			"path": "github.com/tomasen/realip",
 			"revision": "15489afd3be348430f5f67467d2bb6b2f9b757ed",
 			"revisionTime": "2015-09-26T08:24:20Z"
 		}
 	],
-	"rootPath": "github.com/lerenn/telerdd"
+	"rootPath": "github.com/lerenn/telerdd-server"
 }

@@ -1,11 +1,21 @@
 package api
 
 import (
+	"bufio"
+	"bytes"
 	"database/sql"
+	"errors"
+	"encoding/base64"
 	"fmt"
+	"image"
+	"image/gif"
+	"image/jpeg"
+	"image/png"
 	"net/http"
+	"text/template"
 
 	"github.com/lerenn/log"
+	"github.com/nfnt/resize"
 )
 
 type Image struct {
@@ -59,20 +69,68 @@ func (i *Image) Get(r *http.Request, id int) string {
 }
 
 func (i *Image) Post(r *http.Request, id int) string {
+	var err error
+
 	// Get image from request
 	image := r.FormValue("image")
 	if image == "" {
 		return jsonError("No image provided")
 	}
 
-	if err := saveImage(i.db,image,id); err != nil {
+	// Process img
+	if image, err = processImg(image); err != nil {
 		return jsonError(err.Error())
 	}
+
+	// Save image into DB
+	if err := saveImg(i.db,image,id); err != nil {
+		return jsonError(err.Error())
+	}
+
 	return jsonResponseOk()
 }
 
+// Private functions
+////////////////////////////////////////////////////////////////////////////////
+
+// Process image
+func processImg(dataURL string) (string, error){
+	b64Img, mime := parseDataURL(dataURL)
+
+	// Decode
+	rawImg, err := base64.StdEncoding.DecodeString(b64Img)
+	if err != nil {
+		return "", err
+	}
+
+	// Read image by its type
+	img, config, err := imgRawDecode(rawImg, mime)
+	if err != nil {
+		return "", err
+	}
+
+	// Resize if width is to high
+	if config.Width > 1920 {
+		img = resize.Resize(1920, 0, img, resize.Lanczos3)
+	}
+
+	// Resize if height is to high
+	if config.Height > 1080 {
+		img = resize.Resize(0, 1080, img, resize.Lanczos3)
+	}
+
+	// Encode
+	rawImg, err = imgRawEncode(img, mime)
+	if err != nil {
+		return "", err
+	}
+	b64Img = base64.StdEncoding.EncodeToString(rawImg)
+
+	return formatDataURL(b64Img, mime), nil
+}
+
 // Save image
-func saveImage(db *sql.DB, img string, id int) error {
+func saveImg(db *sql.DB, img string, id int) error {
 	// TODO: Check if there is already an image
 
 	// Prepare add to database
@@ -100,4 +158,81 @@ func saveImage(db *sql.DB, img string, id int) error {
 	}
 
 	return nil
+}
+
+func parseDataURL(dataURL string) (string,string){
+	// Check XSS
+	dataURL = template.HTMLEscapeString(dataURL)
+
+	// Remove infos
+	infos, b64Img := splitString(dataURL, ";base64,")
+	_, mime := splitString(infos, ":")
+
+	// Format mimes
+	if mime == "image/jpg" {
+		mime = "image/jpeg"
+	}
+
+	return b64Img, mime
+}
+
+func formatDataURL(b64Img, mime string) string {
+	return "data:"+mime+";base64,"+b64Img
+}
+
+func imgRawDecode(rawImg []byte, mime string) (image.Image, image.Config, error){
+	var img image.Image
+	var config image.Config
+	var err error
+
+	imgReader := bytes.NewReader(rawImg)
+	configReader := bytes.NewReader(rawImg)
+	switch mime {
+	case "image/gif":
+		if img, err = gif.Decode(imgReader); err != nil {
+				return img, config, err
+		} else if config, err = gif.DecodeConfig(configReader); err != nil {
+				return img, config, err
+		}
+	case "image/jpeg":
+		if img, err = jpeg.Decode(imgReader); err != nil {
+	      return img, config, err
+	  } else	if config, err = jpeg.DecodeConfig(configReader); err != nil {
+	      return img, config, err
+	  }
+	case "image/png":
+		if img, err = png.Decode(imgReader); err != nil {
+	      return img, config, err
+	  } else if config, err = png.DecodeConfig(configReader); err != nil {
+	      return img, config, err
+	  }
+	default:
+		return img, config, errors.New("Unrecognized image format")
+	}
+
+	return img, config, nil
+}
+
+func imgRawEncode(img image.Image, mime string) ([]byte, error){
+	var buffer bytes.Buffer
+	writer := bufio.NewWriter(&buffer)
+
+	switch mime {
+	case "image/gif":
+		if err := gif.Encode(writer, img, nil); err != nil {
+				return nil, err
+		}
+	case "image/jpeg":
+		if err := jpeg.Encode(writer, img, nil); err != nil {
+	      return nil, err
+	  }
+	case "image/png":
+		if err := png.Encode(writer, img); err != nil {
+	      return nil, err
+	  }
+	default:
+		return nil, errors.New("Unrecognized image format")
+	}
+
+	return buffer.Bytes(), nil
 }
