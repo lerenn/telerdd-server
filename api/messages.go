@@ -130,7 +130,7 @@ func (m *Messages) Post(r *http.Request) string {
 	img := r.FormValue("image")
 	imgPresence := strings.Contains(img, "base64") || strings.Contains(img, "http")
 	// Process img
-	if img, err = processImg(img); err != nil {
+	if img, err = processImg(m.data, img); err != nil {
 		return jsonError(err.Error())
 	}
 

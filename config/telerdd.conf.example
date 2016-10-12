@@ -13,3 +13,7 @@ limit="5"
 
 [client]
 authorized_origin="*"
+
+[image]
+max_width="1920"
+max_height="1080"

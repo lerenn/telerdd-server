@@ -18,4 +18,8 @@ const (
 
 	CLIENT_SECTION_TOKEN           = "client"
 	CLIENT_AUTHORIZED_ORIGIN_TOKEN = "authorized_origin"
+
+	IMAGE_SECTION_TOKEN = "image"
+	IMAGE_MAX_WIDTH_TOKEN = "max_width"
+	IMAGE_MAX_HEIGHT_TOKEN = "max_height"
 )

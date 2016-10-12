@@ -78,7 +78,7 @@ func (i *Image) Post(r *http.Request, id int) string {
 	}
 
 	// Process img
-	if image, err = processImg(image); err != nil {
+	if image, err = processImg(i.data, image); err != nil {
 		return jsonError(err.Error())
 	}
 
@@ -94,7 +94,7 @@ func (i *Image) Post(r *http.Request, id int) string {
 ////////////////////////////////////////////////////////////////////////////////
 
 // Process image
-func processImg(dataURL string) (string, error){
+func processImg(data *Data, dataURL string) (string, error){
 	b64Img, mime := parseDataURL(dataURL)
 
 	// Decode
@@ -110,13 +110,13 @@ func processImg(dataURL string) (string, error){
 	}
 
 	// Resize if width is to high
-	if config.Width > 1920 {
-		img = resize.Resize(1920, 0, img, resize.Lanczos3)
+	if config.Width > data.imgMaxWidth {
+		img = resize.Resize(uint(data.imgMaxWidth), 0, img, resize.Lanczos3)
 	}
 
 	// Resize if height is to high
-	if config.Height > 1080 {
-		img = resize.Resize(0, 1080, img, resize.Lanczos3)
+	if config.Height > data.imgMaxHeight{
+		img = resize.Resize(0, uint(data.imgMaxHeight), img, resize.Lanczos3)
 	}
 
 	// Encode
