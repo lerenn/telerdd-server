@@ -11,37 +11,37 @@ import (
 	"github.com/lerenn/log"
 )
 
-type Messages struct {
+type messagesBundle struct {
 	// Infos
-	data   *Data
+	data   *data
 	db     *sql.DB
 	logger *log.Log
 	// API
-	msg *Message
+	msg *messageBundle
 }
 
-func newMessages(data *Data, db *sql.DB, logger *log.Log) *Messages {
-	var m Messages
-	m.data = data
+func newMessagesBundle(d *data, db *sql.DB, logger *log.Log) *messagesBundle {
+	var m messagesBundle
+	m.data = d
 	m.db = db
 	m.logger = logger
-	m.msg = newMessage(data, db, logger)
+	m.msg = newMessageBundle(d, db, logger)
 	return &m
 }
 
-func (m *Messages) Process(request string, r *http.Request) string {
+func (m *messagesBundle) Process(request string, r *http.Request) string {
 	base, extend := splitString(request, "/")
 
 	// If nothing more
 	if base == "" {
 		switch r.Method {
-		case "GET":
+		case getMethod:
 			return m.Get(r)
-		case "POST":
+		case postMethod:
 			return m.Post(r)
-		case "PUT":
+		case putMethod:
 			return jsonError("Method not implemented")
-		case "DELETE":
+		case deleteMethod:
 			return jsonError("Method not implemented")
 		default:
 			return jsonError("Unknown HTTP Method")
@@ -57,7 +57,7 @@ func (m *Messages) Process(request string, r *http.Request) string {
 	return m.msg.Process(r, id, extend)
 }
 
-func (m *Messages) Get(r *http.Request) string {
+func (m *messagesBundle) Get(r *http.Request) string {
 	// Get arguments
 	status := getStatus(r)
 	requestArgs := fmt.Sprintf("status REGEXP %q", status)
@@ -107,7 +107,7 @@ func (m *Messages) Get(r *http.Request) string {
 	return "{\"messages\":[" + response + "]}"
 }
 
-func (m *Messages) Post(r *http.Request) string {
+func (m *messagesBundle) Post(r *http.Request) string {
 	// Check if authorized
 	ip := getRequestIP(r)
 	t, err := m.data.ProceedMessageLimit(ip)
@@ -162,7 +162,7 @@ func (m *Messages) Post(r *http.Request) string {
 
 	// Save image if there is one
 	if imgPresence {
-		if err := saveImg(m.db,img,int(id)); err != nil {
+		if err := saveImg(m.db, img, int(id)); err != nil {
 			return jsonError(err.Error())
 		}
 	}

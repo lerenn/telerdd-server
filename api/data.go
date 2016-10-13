@@ -8,7 +8,7 @@ import (
 	cst "github.com/lerenn/telerdd-server/constants"
 )
 
-type Data struct {
+type data struct {
 	// Request
 	authorizedOrigin string
 	// Message
@@ -16,12 +16,12 @@ type Data struct {
 	msgIP     map[string]*time.Time
 	msgIPLock *sync.Mutex
 	// Image
-	imgMaxWidth int
+	imgMaxWidth  int
 	imgMaxHeight int
 }
 
-func newData(c *config.Config) (*Data, error) {
-	var d Data
+func newData(c *config.Config) (*data, error) {
+	var d data
 	var err error
 
 	// Get msg limit
@@ -48,7 +48,7 @@ func newData(c *config.Config) (*Data, error) {
 	return &d, nil
 }
 
-func (d *Data) ProceedMessageLimit(ip string) (int, error) {
+func (d *data) ProceedMessageLimit(ip string) (int, error) {
 	// Lock msgIP
 	d.msgIPLock.Lock()
 	defer d.msgIPLock.Unlock()
@@ -75,7 +75,7 @@ func (d *Data) ProceedMessageLimit(ip string) (int, error) {
 // Accessors
 ////////////////////////////////////////////////////////////////////////////////
 
-func (d *Data) AuthorizedOrigin() string {
+func (d *data) AuthorizedOrigin() string {
 	return d.authorizedOrigin
 }
 
@@ -83,7 +83,7 @@ func (d *Data) AuthorizedOrigin() string {
 ////////////////////////////////////////////////////////////////////////////////
 
 // UNSAFE : You have to lock use
-func (d *Data) addMsgIP(ip string) {
+func (d *data) addMsgIP(ip string) {
 	t := time.Now()
 	d.msgIP[ip] = &t
 }

@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"database/sql"
-	"errors"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"image"
 	"image/gif"
@@ -18,36 +18,36 @@ import (
 	"github.com/nfnt/resize"
 )
 
-type Image struct {
-	data   *Data
+type imageBundle struct {
+	data   *data
 	db     *sql.DB
 	logger *log.Log
 }
 
-func newImage(data *Data, db *sql.DB, logger *log.Log) *Image {
-	var i Image
-	i.data = data
+func newImageBundle(d *data, db *sql.DB, logger *log.Log) *imageBundle {
+	var i imageBundle
+	i.data = d
 	i.db = db
 	i.logger = logger
 	return &i
 }
 
-func (i *Image) Process(r *http.Request, id int) string {
+func (i *imageBundle) Process(r *http.Request, id int) string {
 	switch r.Method {
-	case "GET":
+	case getMethod:
 		return i.Get(r, id)
-	case "POST":
+	case postMethod:
 		return i.Post(r, id)
-	case "PUT":
+	case putMethod:
 		return jsonError("Method not implemented")
-	case "DELETE":
+	case deleteMethod:
 		return jsonError("Method not implemented")
 	default:
 		return jsonError("Unknown HTTP Method")
 	}
 }
 
-func (i *Image) Get(r *http.Request, id int) string {
+func (i *imageBundle) Get(r *http.Request, id int) string {
 	sqlReq := fmt.Sprintf("SELECT img FROM images WHERE msg_id = %d", id)
 	rows, err := i.db.Query(sqlReq)
 	if err != nil {
@@ -68,7 +68,7 @@ func (i *Image) Get(r *http.Request, id int) string {
 	return jsonError("No image corresponding to this message ID")
 }
 
-func (i *Image) Post(r *http.Request, id int) string {
+func (i *imageBundle) Post(r *http.Request, id int) string {
 	var err error
 
 	// Get image from request
@@ -83,7 +83,7 @@ func (i *Image) Post(r *http.Request, id int) string {
 	}
 
 	// Save image into DB
-	if err := saveImg(i.db,image,id); err != nil {
+	if err := saveImg(i.db, image, id); err != nil {
 		return jsonError(err.Error())
 	}
 
@@ -94,7 +94,7 @@ func (i *Image) Post(r *http.Request, id int) string {
 ////////////////////////////////////////////////////////////////////////////////
 
 // Process image
-func processImg(data *Data, dataURL string) (string, error){
+func processImg(data *data, dataURL string) (string, error) {
 	b64Img, mime := parseDataURL(dataURL)
 
 	// Decode
@@ -115,7 +115,7 @@ func processImg(data *Data, dataURL string) (string, error){
 	}
 
 	// Resize if height is to high
-	if config.Height > data.imgMaxHeight{
+	if config.Height > data.imgMaxHeight {
 		img = resize.Resize(0, uint(data.imgMaxHeight), img, resize.Lanczos3)
 	}
 
@@ -160,7 +160,7 @@ func saveImg(db *sql.DB, img string, id int) error {
 	return nil
 }
 
-func parseDataURL(dataURL string) (string,string){
+func parseDataURL(dataURL string) (string, string) {
 	// Check XSS
 	dataURL = template.HTMLEscapeString(dataURL)
 
@@ -170,17 +170,17 @@ func parseDataURL(dataURL string) (string,string){
 
 	// Format mimes
 	if mime == "image/jpg" {
-		mime = "image/jpeg"
+		mime = jpegMIME
 	}
 
 	return b64Img, mime
 }
 
 func formatDataURL(b64Img, mime string) string {
-	return "data:"+mime+";base64,"+b64Img
+	return "data:" + mime + ";base64," + b64Img
 }
 
-func imgRawDecode(rawImg []byte, mime string) (image.Image, image.Config, error){
+func imgRawDecode(rawImg []byte, mime string) (image.Image, image.Config, error) {
 	var img image.Image
 	var config image.Config
 	var err error
@@ -188,24 +188,24 @@ func imgRawDecode(rawImg []byte, mime string) (image.Image, image.Config, error)
 	imgReader := bytes.NewReader(rawImg)
 	configReader := bytes.NewReader(rawImg)
 	switch mime {
-	case "image/gif":
+	case gifMIME:
 		if img, err = gif.Decode(imgReader); err != nil {
-				return img, config, err
+			return img, config, err
 		} else if config, err = gif.DecodeConfig(configReader); err != nil {
-				return img, config, err
+			return img, config, err
 		}
-	case "image/jpeg":
+	case jpegMIME:
 		if img, err = jpeg.Decode(imgReader); err != nil {
-	      return img, config, err
-	  } else	if config, err = jpeg.DecodeConfig(configReader); err != nil {
-	      return img, config, err
-	  }
-	case "image/png":
+			return img, config, err
+		} else if config, err = jpeg.DecodeConfig(configReader); err != nil {
+			return img, config, err
+		}
+	case pngMIME:
 		if img, err = png.Decode(imgReader); err != nil {
-	      return img, config, err
-	  } else if config, err = png.DecodeConfig(configReader); err != nil {
-	      return img, config, err
-	  }
+			return img, config, err
+		} else if config, err = png.DecodeConfig(configReader); err != nil {
+			return img, config, err
+		}
 	default:
 		return img, config, errors.New("Unrecognized image format")
 	}
@@ -213,23 +213,23 @@ func imgRawDecode(rawImg []byte, mime string) (image.Image, image.Config, error)
 	return img, config, nil
 }
 
-func imgRawEncode(img image.Image, mime string) ([]byte, error){
+func imgRawEncode(img image.Image, mime string) ([]byte, error) {
 	var buffer bytes.Buffer
 	writer := bufio.NewWriter(&buffer)
 
 	switch mime {
-	case "image/gif":
+	case gifMIME:
 		if err := gif.Encode(writer, img, nil); err != nil {
-				return nil, err
+			return nil, err
 		}
-	case "image/jpeg":
+	case jpegMIME:
 		if err := jpeg.Encode(writer, img, nil); err != nil {
-	      return nil, err
-	  }
-	case "image/png":
+			return nil, err
+		}
+	case pngMIME:
 		if err := png.Encode(writer, img); err != nil {
-	      return nil, err
-	  }
+			return nil, err
+		}
 	default:
 		return nil, errors.New("Unrecognized image format")
 	}

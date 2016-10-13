@@ -9,36 +9,36 @@ import (
 	"github.com/lerenn/log"
 )
 
-type Message struct {
-	data   *Data
+type messageBundle struct {
+	data   *data
 	db     *sql.DB
 	logger *log.Log
 	// API
-	img *Image
+	img *imageBundle
 }
 
-func newMessage(data *Data, db *sql.DB, logger *log.Log) *Message {
-	var m Message
-	m.data = data
+func newMessageBundle(d *data, db *sql.DB, logger *log.Log) *messageBundle {
+	var m messageBundle
+	m.data = d
 	m.db = db
 	m.logger = logger
-	m.img = newImage(data, db, logger)
+	m.img = newImageBundle(d, db, logger)
 	return &m
 }
 
-func (m *Message) Process(r *http.Request, id int, request string) string {
+func (m *messageBundle) Process(r *http.Request, id int, request string) string {
 	base, _ := splitString(request, "/")
 
 	// If there is nothing
 	if base == "" {
 		switch r.Method {
-		case "GET":
+		case getMethod:
 			return m.Get(r, id)
-		case "POST":
+		case postMethod:
 			return jsonError("Method not implemented")
-		case "PUT":
+		case putMethod:
 			return m.Put(r, id)
-		case "DELETE":
+		case deleteMethod:
 			return jsonError("Method not implemented")
 		default:
 			return jsonError("Unknown HTTP Method")
@@ -50,7 +50,7 @@ func (m *Message) Process(r *http.Request, id int, request string) string {
 	}
 }
 
-func (m *Message) Get(r *http.Request, id int) string {
+func (m *messageBundle) Get(r *http.Request, id int) string {
 	sqlReq := fmt.Sprintf("SELECT id,time,message,img,name,status FROM messages WHERE id = %d", id)
 	rows, err := m.db.Query(sqlReq)
 	if err != nil {
@@ -73,13 +73,13 @@ func (m *Message) Get(r *http.Request, id int) string {
 			time = err.Error()
 		}
 
-		return MessageToJSON(id, img, txt, time, name, status)
+		return messageBundleToJSON(id, img, txt, time, name, status)
 	}
 
 	return jsonError("No message corresponding to this ID")
 }
 
-func (m *Message) Put(r *http.Request, id int) string {
+func (m *messageBundle) Put(r *http.Request, id int) string {
 	// Check permission
 	errAuth := authorized(m.db, r, 1)
 	if errAuth != nil {
@@ -107,7 +107,7 @@ func (m *Message) Put(r *http.Request, id int) string {
 	return jsonResponseOk()
 }
 
-func MessageToJSON(id int, img bool, txt, time, name, status string) string {
+func messageBundleToJSON(id int, img bool, txt, time, name, status string) string {
 	// Check image bool
 	imgTxt := "false"
 	if img {

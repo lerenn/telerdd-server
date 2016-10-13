@@ -10,36 +10,36 @@ import (
 	cst "github.com/lerenn/telerdd-server/constants"
 )
 
-type Token struct {
-	data   *Data
+type tokenBundle struct {
+	data   *data
 	db     *sql.DB
 	logger *log.Log
 }
 
-func newToken(data *Data, db *sql.DB, logger *log.Log) *Token {
-	var t Token
-	t.data = data
+func newTokenBundle(d *data, db *sql.DB, logger *log.Log) *tokenBundle {
+	var t tokenBundle
+	t.data = d
 	t.db = db
 	t.logger = logger
 	return &t
 }
 
-func (t *Token) Process(r *http.Request) string {
+func (t *tokenBundle) Process(r *http.Request) string {
 	switch r.Method {
-	case "GET":
+	case getMethod:
 		return t.Get(r)
-	case "POST":
+	case postMethod:
 		return jsonError("Method not implemented")
-	case "PUT":
+	case putMethod:
 		return jsonError("Method not implemented")
-	case "DELETE":
+	case deleteMethod:
 		return jsonError("Method not implemented")
 	default:
 		return jsonError("Unknown HTTP Method")
 	}
 }
 
-func (t *Token) Get(r *http.Request) string {
+func (t *tokenBundle) Get(r *http.Request) string {
 	// Get infos
 	username := r.FormValue("username")
 	psswd := r.FormValue("password")
@@ -65,7 +65,7 @@ func (t *Token) Get(r *http.Request) string {
 		}
 
 		if psswd == psswdFromDB && accountType >= accountTypeFromDB {
-			token, err := t.generateToken(id)
+			token, err := t.generatetokenBundle(id)
 			if err != nil {
 				jsonError("Error when generating token : " + err.Error())
 			}
@@ -82,7 +82,7 @@ func (t *Token) Get(r *http.Request) string {
 // Private methods
 ////////////////////////////////////////////////////////////////////////////////
 
-func (t *Token) generateToken(id int) (string, error) {
+func (t *tokenBundle) generatetokenBundle(id int) (string, error) {
 	// Generate the token
 	b := make([]byte, cst.AUTH_TOKEN_SIZE)
 	rand.Read(b)

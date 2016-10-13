@@ -9,12 +9,14 @@ import (
 	"github.com/lerenn/log"
 )
 
+// API instance
 type API struct {
-	data     *Data
-	account  *Account
-	messages *Messages
+	data     *data
+	account  *accountBundle
+	messages *messagesBundle
 }
 
+// New API instance
 func New(c *config.Config, db *sql.DB, logger *log.Log) (*API, error) {
 	var a API
 	var err error
@@ -23,8 +25,8 @@ func New(c *config.Config, db *sql.DB, logger *log.Log) (*API, error) {
 	if a.data, err = newData(c); err != nil {
 		return nil, err
 	}
-	a.account = newAccount(a.data, db, logger)
-	a.messages = newMessages(a.data, db, logger)
+	a.account = newAccountBundle(a.data, db, logger)
+	a.messages = newMessagesBundle(a.data, db, logger)
 
 	// Set callback
 	http.HandleFunc("/", a.Process)
@@ -32,6 +34,7 @@ func New(c *config.Config, db *sql.DB, logger *log.Log) (*API, error) {
 	return &a, nil
 }
 
+// Process HTTP Request
 func (a *API) Process(w http.ResponseWriter, r *http.Request) {
 	base, extent := splitString(r.URL.Path[1:], "/")
 

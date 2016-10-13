@@ -57,10 +57,10 @@ func getRequestInt(r *http.Request, name string) (int, bool, error) {
 // SQL Operations
 ////////////////////////////////////////////////////////////////////////////////
 
-const SQL_DATETIME_FORM = "2006-01-02 15:04:05"
+const sqlDatetimeForm = "2006-01-02 15:04:05"
 
 func sqlTimeNow() string {
-	return time.Now().Format(SQL_DATETIME_FORM)
+	return time.Now().Format("2006-01-02 15:04:05")
 }
 
 func sqlFormatDateTime(orig string) (string, error) {
@@ -72,7 +72,7 @@ func sqlFormatDateTime(orig string) (string, error) {
 }
 
 func sqlParseTime(t string) (time.Time, error) {
-	return time.Parse(SQL_DATETIME_FORM, t)
+	return time.Parse(sqlDatetimeForm, t)
 }
 
 // Strings
@@ -89,7 +89,6 @@ func splitString(line, separator string) (string, string) {
 	index := strings.Index(line, separator)
 	if index < 0 {
 		return line, ""
-	} else {
-		return line[:index], line[index+len(separator):]
 	}
+	return line[:index], line[index+len(separator):]
 }
