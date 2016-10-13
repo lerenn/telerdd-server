@@ -12,8 +12,8 @@ import (
 // API instance
 type API struct {
 	data     *data
-	account  *accountBundle
-	messages *messagesBundle
+	account  accountBundle
+	messages messagesBundle
 }
 
 // New API instance
@@ -25,8 +25,9 @@ func New(c *config.Config, db *sql.DB, logger *log.Log) (*API, error) {
 	if a.data, err = newData(c); err != nil {
 		return nil, err
 	}
-	a.account = newAccountBundle(a.data, db, logger)
-	a.messages = newMessagesBundle(a.data, db, logger)
+	b := newBundle(a.data, db, logger)
+	a.account = newAccountBundle(b)
+	a.messages = newMessagesBundle(b)
 
 	// Set callback
 	http.HandleFunc("/", a.Process)

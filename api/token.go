@@ -1,27 +1,19 @@
 package api
 
 import (
-	"database/sql"
 	"fmt"
 	"math/rand"
 	"net/http"
 
-	"github.com/lerenn/log"
 	cst "github.com/lerenn/telerdd-server/constants"
 )
 
 type tokenBundle struct {
-	data   *data
-	db     *sql.DB
-	logger *log.Log
+	bundle
 }
 
-func newTokenBundle(d *data, db *sql.DB, logger *log.Log) *tokenBundle {
-	var t tokenBundle
-	t.data = d
-	t.db = db
-	t.logger = logger
-	return &t
+func newTokenBundle(b bundle) tokenBundle {
+	return tokenBundle{b}
 }
 
 func (t *tokenBundle) Process(r *http.Request) string {

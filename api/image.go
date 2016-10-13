@@ -14,22 +14,15 @@ import (
 	"net/http"
 	"text/template"
 
-	"github.com/lerenn/log"
 	"github.com/nfnt/resize"
 )
 
 type imageBundle struct {
-	data   *data
-	db     *sql.DB
-	logger *log.Log
+	bundle
 }
 
-func newImageBundle(d *data, db *sql.DB, logger *log.Log) *imageBundle {
-	var i imageBundle
-	i.data = d
-	i.db = db
-	i.logger = logger
-	return &i
+func newImageBundle(b bundle) imageBundle {
+	return imageBundle{b}
 }
 
 func (i *imageBundle) Process(r *http.Request, id int) string {

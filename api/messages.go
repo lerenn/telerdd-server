@@ -1,32 +1,20 @@
 package api
 
 import (
-	"database/sql"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 	"text/template"
-
-	"github.com/lerenn/log"
 )
 
 type messagesBundle struct {
-	// Infos
-	data   *data
-	db     *sql.DB
-	logger *log.Log
-	// API
-	msg *messageBundle
+	bundle
+	msg messageBundle
 }
 
-func newMessagesBundle(d *data, db *sql.DB, logger *log.Log) *messagesBundle {
-	var m messagesBundle
-	m.data = d
-	m.db = db
-	m.logger = logger
-	m.msg = newMessageBundle(d, db, logger)
-	return &m
+func newMessagesBundle(b bundle) messagesBundle {
+	return messagesBundle{b, newMessageBundle(b)}
 }
 
 func (m *messagesBundle) Process(request string, r *http.Request) string {

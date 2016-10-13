@@ -1,28 +1,14 @@
 package api
 
-import (
-	"database/sql"
-	"net/http"
-
-	"github.com/lerenn/log"
-)
+import "net/http"
 
 type accountBundle struct {
-	// Infos
-	data   *data
-	db     *sql.DB
-	logger *log.Log
-	// API
-	token *tokenBundle
+	bundle
+	token tokenBundle
 }
 
-func newAccountBundle(d *data, db *sql.DB, logger *log.Log) *accountBundle {
-	var a accountBundle
-	a.data = d
-	a.db = db
-	a.logger = logger
-	a.token = newTokenBundle(d, db, logger)
-	return &a
+func newAccountBundle(b bundle) accountBundle {
+	return accountBundle{b, newTokenBundle(b)}
 }
 
 func (a *accountBundle) Process(request string, r *http.Request) string {
