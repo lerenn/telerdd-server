@@ -118,8 +118,10 @@ func (m *messagesBundle) Post(r *http.Request) string {
 	img := r.FormValue("image")
 	imgPresence := strings.Contains(img, "base64") || strings.Contains(img, "http")
 	// Process img
-	if img, err = processImg(m.data, img); err != nil {
-		return jsonError(err.Error())
+	if imgPresence {
+		if img, err = processImg(m.data, img); err != nil {
+			return jsonError(err.Error())
+		}
 	}
 
 	// Get message from request
