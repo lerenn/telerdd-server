@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-
-	cst "github.com/lerenn/telerdd-server/constants"
 )
+
+const authTokenSize = 20
 
 type tokenBundle struct {
 	bundle
@@ -76,7 +76,7 @@ func (t *tokenBundle) Get(r *http.Request) string {
 
 func (t *tokenBundle) generatetokenBundle(id int) (string, error) {
 	// Generate the token
-	b := make([]byte, cst.AUTH_TOKEN_SIZE)
+	b := make([]byte, authTokenSize)
 	rand.Read(b)
 	token := fmt.Sprintf("%x", b)
 

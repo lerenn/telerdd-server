@@ -4,41 +4,46 @@ import (
 	"sync"
 	"time"
 
-	config "github.com/lerenn/go-config"
-	cst "github.com/lerenn/telerdd-server/constants"
+	libConfig "github.com/lerenn/go-config"
+	appConfig "github.com/lerenn/telerdd-server/config"
 )
 
 type data struct {
 	// Request
 	authorizedOrigin string
 	// Message
-	msgLimit  int
-	msgIP     map[string]*time.Time
-	msgIPLock *sync.Mutex
+	msgLimit     int
+	MsgLimitSize int
+	msgIP        map[string]*time.Time
+	msgIPLock    *sync.Mutex
 	// Image
-	imgMaxWidth  int
-	imgMaxHeight int
+	imgMaxWidth, imgMaxHeight int
 }
 
-func newData(c *config.Config) (*data, error) {
+func newData(c *libConfig.Config) (*data, error) {
 	var d data
 	var err error
 
 	// Get msg limit
-	if d.msgLimit, err = c.GetInt(cst.MESSAGES_SECTION_TOKEN, cst.MESSAGES_LIMIT_TOKEN); err != nil {
+	if d.msgLimit, err = c.GetInt(appConfig.MessagesSectionToken, appConfig.MessagesLimitToken); err != nil {
+		return nil, err
+	}
+
+	// Get msg limit size
+	if d.MsgLimitSize, err = c.GetInt(appConfig.MessagesSectionToken, appConfig.MessagesLimitSizeToken); err != nil {
 		return nil, err
 	}
 
 	// Get authorized URL for client
-	if d.authorizedOrigin, err = c.GetString(cst.CLIENT_SECTION_TOKEN, cst.CLIENT_AUTHORIZED_ORIGIN_TOKEN); err != nil {
+	if d.authorizedOrigin, err = c.GetString(appConfig.ClientSectionToken, appConfig.ClientAuthorizedOriginToken); err != nil {
 		return nil, err
 	}
 
 	// Get max size for picture
-	if d.imgMaxWidth, err = c.GetInt(cst.IMAGE_SECTION_TOKEN, cst.IMAGE_MAX_WIDTH_TOKEN); err != nil {
+	if d.imgMaxWidth, err = c.GetInt(appConfig.ImageSectionToken, appConfig.ImageMaxWidthToken); err != nil {
 		return nil, err
 	}
-	if d.imgMaxHeight, err = c.GetInt(cst.IMAGE_SECTION_TOKEN, cst.IMAGE_MAX_HEIGHT_TOKEN); err != nil {
+	if d.imgMaxHeight, err = c.GetInt(appConfig.ImageSectionToken, appConfig.ImageMaxHeightToken); err != nil {
 		return nil, err
 	}
 

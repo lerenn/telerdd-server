@@ -2,25 +2,29 @@ package db
 
 import (
 	"database/sql"
+
+	libConfig "github.com/lerenn/go-config"
+	appConfig "github.com/lerenn/telerdd-server/config"
+
+	// MySQL driver
 	_ "github.com/go-sql-driver/mysql"
-	config "github.com/lerenn/go-config"
-	cst "github.com/lerenn/telerdd-server/constants"
 )
 
-func New(c *config.Config) (*sql.DB, error) {
+// New database for application
+func New(c *libConfig.Config) (*sql.DB, error) {
 	var user, password, addr, port, name string
 	var err error
 
 	// Get params
-	if user, err = c.GetString(cst.DB_SECTION_TOKEN, cst.DB_USER_TOKEN); err != nil {
+	if user, err = c.GetString(appConfig.DbSectionToken, appConfig.DbUserToken); err != nil {
 		return nil, err
-	} else if password, err = c.GetString(cst.DB_SECTION_TOKEN, cst.DB_PASSWORD_TOKEN); err != nil {
+	} else if password, err = c.GetString(appConfig.DbSectionToken, appConfig.DbPasswordToken); err != nil {
 		return nil, err
-	} else if addr, err = c.GetString(cst.DB_SECTION_TOKEN, cst.DB_ADDR_TOKEN); err != nil {
+	} else if addr, err = c.GetString(appConfig.DbSectionToken, appConfig.DbAddrToken); err != nil {
 		return nil, err
-	} else if port, err = c.GetString(cst.DB_SECTION_TOKEN, cst.DB_PORT_TOKEN); err != nil {
+	} else if port, err = c.GetString(appConfig.DbSectionToken, appConfig.DbPortToken); err != nil {
 		return nil, err
-	} else if name, err = c.GetString(cst.DB_SECTION_TOKEN, cst.DB_NAME_TOKEN); err != nil {
+	} else if name, err = c.GetString(appConfig.DbSectionToken, appConfig.DbNameToken); err != nil {
 		return nil, err
 	}
 

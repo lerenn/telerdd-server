@@ -3,15 +3,14 @@ package main
 import (
 	"errors"
 
-	"github.com/lerenn/go-config"
+	libConfig "github.com/lerenn/go-config"
 	"github.com/lerenn/log"
-
-	cst "github.com/lerenn/telerdd-server/constants"
+	appConfig "github.com/lerenn/telerdd-server/config"
 )
 
-func newLog(c *config.Config) (*log.Log, error) {
+func newLog(c *libConfig.Config) (*log.Log, error) {
 	// Get log file name
-	logFile, err := c.GetString(cst.LOG_SECTION_TOKEN, cst.LOG_FILE_TOKEN)
+	logFile, err := c.GetString(appConfig.LogSectionToken, appConfig.LogFileToken)
 	if err != nil {
 		return nil, err
 	}

@@ -128,6 +128,9 @@ func (m *messagesBundle) Post(r *http.Request) string {
 	message := r.FormValue("message")
 	if message == "" && imgPresence == false {
 		return jsonError("No text in your message")
+	} else if msgLen := len(message); msgLen > m.data.MsgLimitSize {
+		errTxt := fmt.Sprintf("Message limit size exceeded (%d characters for %d characters max)", msgLen, m.data.MsgLimitSize)
+		return jsonError(errTxt)
 	} else if message != "" {
 		message = template.HTMLEscapeString(message)
 		message = replaceBadChar(message)

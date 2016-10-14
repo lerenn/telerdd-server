@@ -10,6 +10,7 @@ file="/var/log/telerdd.log"
 
 [messages]
 limit="5"
+limit_size="1024"
 
 [client]
 authorized_origin="*"
