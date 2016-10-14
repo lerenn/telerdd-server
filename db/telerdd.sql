@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Oct 11, 2016 at 05:33 PM
+-- Generation Time: Oct 14, 2016 at 05:31 PM
 -- Server version: 5.7.15
--- PHP Version: 5.6.25
+-- PHP Version: 5.6.26
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -19,8 +19,6 @@ SET time_zone = "+00:00";
 --
 -- Database: `telerdd`
 --
-CREATE DATABASE IF NOT EXISTS `telerdd` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
-USE `telerdd`;
 
 -- --------------------------------------------------------
 
@@ -45,9 +43,9 @@ CREATE TABLE `messages` (
   `id` smallint(5) UNSIGNED NOT NULL,
   `ip` varchar(16) NOT NULL,
   `time` datetime NOT NULL,
-  `message` text NOT NULL,
+  `message` text CHARACTER SET utf8mb4 NOT NULL,
   `img` tinyint(1) DEFAULT NULL,
-  `name` varchar(255) NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
   `status` varchar(8) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -66,6 +64,13 @@ CREATE TABLE `users` (
   `retries` tinyint(4) DEFAULT NULL,
   `type` tinyint(4) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `username`, `password`, `lastconnection`, `token`, `retries`, `type`) VALUES
+(1, 'admin', '21232f297a57a5a743894a0e4a801fc3', NULL, '037c4d7bbb0407d1e2c64981855ad8681d0d86d1', NULL, 1);
 
 --
 -- Indexes for dumped tables
@@ -107,7 +112,7 @@ ALTER TABLE `messages`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
