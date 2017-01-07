@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/lerenn/telerdd-server/api"
-	"github.com/lerenn/telerdd-server/config"
-	"github.com/lerenn/telerdd-server/db"
+	"github.com/nightwall/nightwall-server/api"
+	"github.com/nightwall/nightwall-server/config"
+	"github.com/nightwall/nightwall-server/db"
 )
 
 const noDate = "[###]"

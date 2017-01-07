@@ -1,7 +1,7 @@
 package config
 
 const (
-	ConfigFile = "config/telerdd.conf"
+	ConfigFile = "config/nightwall.conf"
 
 	LogSectionToken = "log"
 	LogFileToken    = "file"

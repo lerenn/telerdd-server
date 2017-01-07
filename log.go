@@ -5,7 +5,7 @@ import (
 
 	libConfig "github.com/lerenn/go-config"
 	"github.com/lerenn/log"
-	appConfig "github.com/lerenn/telerdd-server/config"
+	appConfig "github.com/nightwall/nightwall-server/config"
 )
 
 func newLog(c *libConfig.Config) (*log.Log, error) {

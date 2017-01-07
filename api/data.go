@@ -5,7 +5,7 @@ import (
 	"time"
 
 	libConfig "github.com/lerenn/go-config"
-	appConfig "github.com/lerenn/telerdd-server/config"
+	appConfig "github.com/nightwall/nightwall-server/config"
 )
 
 type data struct {

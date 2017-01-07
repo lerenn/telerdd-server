@@ -4,7 +4,7 @@ import (
 	"database/sql"
 
 	libConfig "github.com/lerenn/go-config"
-	appConfig "github.com/lerenn/telerdd-server/config"
+	appConfig "github.com/nightwall/nightwall-server/config"
 
 	// MySQL driver
 	_ "github.com/go-sql-driver/mysql"

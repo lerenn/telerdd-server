@@ -6,13 +6,13 @@ EXPOSE 8080
 
 # Volumes
 VOLUME /var/log
-VOLUME /telerdd-server
+VOLUME /nightwall-server
 
 # Workdir
-WORKDIR /telerdd-server
+WORKDIR /nightwall-server
 
 # Command
-CMD ./bin/telerdd-server
+CMD ./bin/nightwall-server
 
 # Data
 COPY ./ ./
