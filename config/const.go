@@ -17,6 +17,9 @@ const (
 	MessagesLimitToken     = "limit"
 	MessagesLimitSizeToken = "limit_size"
 
+	MessagesModerationWithImg    = "moderate_msg_with_img"
+	MessagesModerationWithoutImg = "moderate_msg_without_img"
+
 	ClientSectionToken          = "client"
 	ClientAuthorizedOriginToken = "authorized_origin"
 

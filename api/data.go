@@ -1,6 +1,7 @@
 package api
 
 import (
+	"strings"
 	"sync"
 	"time"
 
@@ -16,6 +17,9 @@ type data struct {
 	MsgLimitSize int
 	msgIP        map[string]*time.Time
 	msgIPLock    *sync.Mutex
+	// Moderation
+	MsgModerationWithImg    bool
+	MsgModerationWithoutImg bool
 	// Image
 	imgMaxWidth, imgMaxHeight int
 }
@@ -23,6 +27,7 @@ type data struct {
 func newData(c *libConfig.Config) (*data, error) {
 	var d data
 	var err error
+	var str string
 
 	// Get msg limit
 	if d.msgLimit, err = c.GetInt(appConfig.MessagesSectionToken, appConfig.MessagesLimitToken); err != nil {
@@ -46,6 +51,16 @@ func newData(c *libConfig.Config) (*data, error) {
 	if d.imgMaxHeight, err = c.GetInt(appConfig.ImageSectionToken, appConfig.ImageMaxHeightToken); err != nil {
 		return nil, err
 	}
+
+	// Get message moderation
+	if str, err = c.GetString(appConfig.MessagesSectionToken, appConfig.MessagesModerationWithImg); err != nil {
+		return nil, err
+	}
+	d.MsgModerationWithImg = strings.EqualFold(str, "true")
+	if str, err = c.GetString(appConfig.MessagesSectionToken, appConfig.MessagesModerationWithoutImg); err != nil {
+		return nil, err
+	}
+	d.MsgModerationWithoutImg = strings.EqualFold(str, "true")
 
 	d.msgIP = make(map[string]*time.Time)
 	d.msgIPLock = &sync.Mutex{}

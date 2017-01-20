@@ -11,6 +11,8 @@ file="/var/log/nightwall.log"
 [messages]
 limit="5"
 limit_size="1024"
+moderate_msg_without_img=false
+moderate_msg_with_img=true
 
 [client]
 authorized_origin="*"

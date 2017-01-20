@@ -96,6 +96,8 @@ func (m *messagesBundle) Get(r *http.Request) string {
 }
 
 func (m *messagesBundle) Post(r *http.Request) string {
+	var status string
+
 	// Check if authorized
 	ip := getRequestIP(r)
 	t, err := m.data.ProceedMessageLimit(ip)
@@ -142,7 +144,13 @@ func (m *messagesBundle) Post(r *http.Request) string {
 		return jsonError(err.Error())
 	}
 
-	res, err := stmt.Exec(ip, sqlTimeNow(), message, imgPresence, name, "pending")
+	if (imgPresence && m.data.MsgModerationWithImg) || (!imgPresence && m.data.MsgModerationWithoutImg) {
+		status = "pending"
+	} else {
+		status = "accepted"
+	}
+
+	res, err := stmt.Exec(ip, sqlTimeNow(), message, imgPresence, name, status)
 	if err != nil {
 		return jsonError(err.Error())
 	}
